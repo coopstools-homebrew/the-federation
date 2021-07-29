@@ -23,7 +23,10 @@ type topNode struct {
 
 func BuildNodeHistogram(topNodeCaller func() ([]byte, error)) NodeHistogram {
 	if topNodeCaller == nil {
-		topNodeCaller = exec.Command("kubectl", "top", "nodes").Output
+		topNodeCaller = func() ([]byte, error) {
+			cmd := exec.Command("kubectl", "top", "nodes", "--use-protocol-buffers")
+			return cmd.Output()
+		}
 	}
 	return NodeHistogram{Data: map[string][]topNode{}, topNodeCaller: topNodeCaller}
 }
