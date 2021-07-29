@@ -54,7 +54,9 @@ func (histagram *NodeHistogram) UpdateStats() {
 		fmt.Printf("%+v", errors.Wrap(err, "Trouble getting node info"))
 		return
 	}
+	fmt.Printf("Function call: %s\n", resp)
 	currentNodeData := parseRows(resp)
+	fmt.Printf("Current output: %v\n", currentNodeData)
 	for nodeName := range currentNodeData {
 		if _, ok := histagram.Data[nodeName]; !ok {
 			histagram.Data[nodeName] = []topNode{}
@@ -63,7 +65,6 @@ func (histagram *NodeHistogram) UpdateStats() {
 	for nodeName := range histagram.Data {
 		if nodeMetrics, ok := currentNodeData[nodeName]; ok {
 			histagram.Data[nodeName] = append(histagram.Data[nodeName], nodeMetrics)
-			continue
 		} else {
 			histagram.Data[nodeName] = append(histagram.Data[nodeName], topNode{})
 		}
