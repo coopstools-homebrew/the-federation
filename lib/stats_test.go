@@ -25,7 +25,7 @@ func TestNodeHistogram_SetupCron(t *testing.T) {
 	})
 
 	histogram.SetupCron(200*time.Millisecond)
-	time.Sleep(2*time.Second)
+	time.Sleep(1900*time.Millisecond)
 
 	assert.Equal(t, 9, len(histogram.Data["other-core-box"]))
 	assert.Equal(t, int64(21000000), histogram.Data["other-core-box"][0].Mem)
