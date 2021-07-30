@@ -15,17 +15,17 @@ type NodeHistogram struct {
 }
 
 type topNode struct {
-	cpu 	int64
-	cpuPer	int
-	mem 	int64
-	memPer	int
+	Cpu 	int64
+	CpuPer	int
+	Mem 	int64
+	MemPer	int
 }
 
 func BuildNodeHistogram(topNodeCaller func() ([]byte, error)) NodeHistogram {
 	if topNodeCaller == nil {
 		topNodeCaller = func() ([]byte, error) {
 			cmd := exec.Command("kubectl", "top", "nodes", "--use-protocol-buffers")
-			return cmd.Output()
+			return cmd.CombinedOutput()
 		}
 	}
 	return NodeHistogram{Data: map[string][]topNode{}, topNodeCaller: topNodeCaller}
@@ -35,6 +35,8 @@ func (histogram *NodeHistogram) SetupCron(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	quit := make(chan struct{})
 	go func() {
+		fmt.Println("Running update")
+		go histogram.UpdateStats()
 		for {
 			select {
 			case <-ticker.C:
@@ -51,12 +53,16 @@ func (histogram *NodeHistogram) SetupCron(interval time.Duration) {
 func (histagram *NodeHistogram) UpdateStats() {
 	resp, err := histagram.topNodeCaller()
 	if err != nil {
-		fmt.Printf("%+v", errors.Wrap(err, "Trouble getting node info"))
+		fmt.Printf("%+v\n", errors.Wrap(err, "Trouble getting node info"))
+		fmt.Printf("cmd output: %s\n", resp)
+		fmt.Println("Populating dummy data")
+		for nodeName := range histagram.Data {
+			histagram.Data[nodeName] = append(histagram.Data[nodeName], topNode{})
+		}
+		//TODO: data should still be appended, even if an error occurs
 		return
 	}
-	fmt.Printf("Function call: %s\n", resp)
 	currentNodeData := parseRows(resp)
-	fmt.Printf("Current output: %v\n", currentNodeData)
 	for nodeName := range currentNodeData {
 		if _, ok := histagram.Data[nodeName]; !ok {
 			histagram.Data[nodeName] = []topNode{}
@@ -68,7 +74,7 @@ func (histagram *NodeHistogram) UpdateStats() {
 		} else {
 			histagram.Data[nodeName] = append(histagram.Data[nodeName], topNode{})
 		}
-		if len(histagram.Data[nodeName]) > 60 {
+		if len(histagram.Data[nodeName]) > 120 {
 			histagram.Data[nodeName] = histagram.Data[nodeName][1:]
 		}
 	}
@@ -84,10 +90,10 @@ func parseRows(row []byte) map[string]topNode {
 		mem			:= convertMemoryToKilobytes(row[4], row[5])
 		memPer, _ 	:= strconv.Atoi(row[6])
 		nodes[row[1]] = topNode{
-			cpu:    cpu,
-			cpuPer: cpuPer,
-			mem:    mem,
-			memPer: memPer,
+			Cpu:    cpu,
+			CpuPer: cpuPer,
+			Mem:    mem,
+			MemPer: memPer,
 		}
 	}
 	return nodes

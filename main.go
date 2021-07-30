@@ -20,7 +20,7 @@ func main() {
 		prefix = "/" + args[2]
 	}
 
-	nodeHistogram.SetupCron(15 * time.Second)
+	nodeHistogram.SetupCron(30 * time.Second)
 	err := setupServerWithPathPrefix(":" + args[1], prefix)
 	fmt.Printf("%+v\n", errors.Wrap(err, "could not start server"))
 }
@@ -41,13 +41,13 @@ func GetSats(w http.ResponseWriter, r *http.Request) {
 	data, err := json.Marshal(nodeHistogram.Data)
 	if err != nil {
 		w.WriteHeader(500)
-		fmt.Printf("\nServer error serializing namespaces: %+v", errors.WithStack(err))
-		fmt.Fprint(w, "Internal server error")
+		fmt.Printf("Server error serializing namespaces: %+v\n", errors.WithStack(err))
+		fmt.Fprint(w, "Internal server error\n")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	count, _ := w.Write(data)
-	fmt.Printf("\n%d bytes returned for GetStats", count)
+	fmt.Printf("%d bytes returned for GetStats\n", count)
 }
 
 func logRequestHandler(h http.Handler) http.Handler {
@@ -55,7 +55,7 @@ func logRequestHandler(h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 		uri := r.URL.String()
 		method := r.Method
-		fmt.Printf("\n%v: %v", method, uri)
+		fmt.Printf("\n%v: %v\n", method, uri)
 	}
 	return http.HandlerFunc(fn)
 }
