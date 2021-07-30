@@ -15,7 +15,7 @@ func TestNodeHistogram_UpdateStats(t *testing.T) {
 	histogram.UpdateStats()
 
 	assert.Equal(t, 1, len(histogram.Data["coopstools-sf-core-box"]))
-	assert.Equal(t, int64(4370000), histogram.Data["coopstools-sf-core-box"][0].mem)
+	assert.Equal(t, int64(4370000), histogram.Data["coopstools-sf-core-box"][0].Mem)
 }
 
 func TestNodeHistogram_SetupCron(t *testing.T) {
@@ -28,5 +28,5 @@ func TestNodeHistogram_SetupCron(t *testing.T) {
 	time.Sleep(2*time.Second)
 
 	assert.Equal(t, 9, len(histogram.Data["other-core-box"]))
-	assert.Equal(t, int64(21000000), histogram.Data["other-core-box"][0].mem)
+	assert.Equal(t, int64(21000000), histogram.Data["other-core-box"][0].Mem)
 }
